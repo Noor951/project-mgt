@@ -1,4 +1,5 @@
 import { defineConfig } from '@prisma/config';
+// Aisa hona chahiye
 
 export default defineConfig({
   datasource: {
