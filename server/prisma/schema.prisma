@@ -4,9 +4,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")          // Neon pooled connection (used at runtime)
-  directUrl = env("DIRECT_DATABASE_URL")   // Neon direct connection (used for migrations)
+  provider = "postgresql"
+  // url aur directUrl yahan se hata dein
 }
 
 enum WorkspaceRole {

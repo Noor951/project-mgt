@@ -5,6 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // url aur directUrl yahan se hata dein
 }
 
 enum WorkspaceRole {
@@ -81,7 +82,7 @@ model WorkspaceMember {
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, workspaceId]) // prevent duplicate membership
+  @@unique([userId, workspaceId])
 }
 
 model Project {
@@ -111,7 +112,7 @@ model ProjectMember {
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, projectId]) // prevent duplicate membership
+  @@unique([userId, projectId])
 }
 
 model Task {
