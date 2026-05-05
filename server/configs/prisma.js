@@ -1,22 +1,20 @@
 import 'dotenv/config';
-// ESM mein PrismaClient ko direct import karne ke bajaye poora package uthana behtar hai
-import pkg from '@prisma/client';
-const { PrismaClient } = pkg;
-
+import { PrismaClient } from '@prisma/client'; // Direct named import use karein
 import { PrismaNeon } from '@prisma/adapter-neon';
+import { Pool } from '@neondatabase/serverless'; // Neon pooler lazmi hai
 
-// Serverless-safe singleton pattern
 const globalForPrisma = globalThis;
 
 const createPrismaClient = () => {
-  // Connection string check
   const connectionString = process.env.DATABASE_URL;
-  const adapter = new PrismaNeon({ connectionString });
+  
+  // Neon serverless adapter setup
+  const pool = new Pool({ connectionString });
+  const adapter = new PrismaNeon(pool);
   
   return new PrismaClient({ adapter });
 };
 
-// Agar global mein pehle se prisma hai toh wahi use karo, warna naya banao
 const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
