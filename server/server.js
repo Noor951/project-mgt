@@ -8,29 +8,13 @@ import { inngest, functions } from "./inngest/index.js";
 const app = express();
 app.use(cors());
 
-// ✅ CRITICAL: Raw body for Inngest BEFORE express.json()
-app.use(
-  "/api/inngest",
-  express.raw({ type: "*/*" }),  // */* not just application/json
-  serve({ 
-    client: inngest, 
-    functions,
-    // Do NOT pass signingKey manually — let SDK read from env
-  })
-);
+// ✅ THE FIX: serve() must come before ANY body parser middleware
+// Do NOT add express.raw() — Inngest handles its own body parsing internally
+app.use("/api/inngest", serve({ client: inngest, functions }));
 
-// Global middleware AFTER inngest route
+// Body parsers AFTER inngest route
 app.use(express.json());
 app.use(clerkMiddleware());
-
-// Debug route (remove after fixing)
-app.get('/api/debug-inngest', (req, res) => {
-  res.json({
-    hasSigningKey: !!process.env.INNGEST_SIGNING_KEY,
-    keyPrefix: process.env.INNGEST_SIGNING_KEY?.slice(0, 22),
-    vercelUrl: process.env.VERCEL_URL,
-  });
-});
 
 app.get('/', (req, res) => {
   res.send('Server is live and Inngest is ready!');
