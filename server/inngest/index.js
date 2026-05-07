@@ -1,12 +1,16 @@
 import { Inngest } from "inngest";
 import prisma from "../configs/prisma.js";
 
-export const inngest = new Inngest({ id: "project-mngt" });
+// ✅ Add eventKey explicitly
+export const inngest = new Inngest({ 
+  id: "project-mngt",
+  eventKey: process.env.INNGEST_EVENT_KEY,
+});
 
-// 1. Sync User Creation
+// Your 3 functions stay exactly the same...
 export const syncUserCreation = inngest.createFunction(
   { id: "sync-user-from-clerk" }, 
-  { event: "clerk/user.created" }, 
+  { event: "clerk/user.created" },  // ✅ This trigger format is correct
   async ({ event }) => {
     const { data } = event;
     await prisma.user.create({
@@ -21,20 +25,16 @@ export const syncUserCreation = inngest.createFunction(
   }
 );
 
-// 2. Sync User Deletion
 export const syncUserDeletion = inngest.createFunction(
   { id: "delete-user-with-clerk" },
   { event: "clerk/user.deleted" },
   async ({ event }) => {
     const { data } = event;
-    await prisma.user.delete({
-      where: { id: data.id },
-    });
+    await prisma.user.delete({ where: { id: data.id } });
     return { success: true, userId: data.id };
   }
 );
 
-// 3. Sync User Update
 export const syncUserUpdation = inngest.createFunction(
   { id: "update-user-from-clerk" },
   { event: "clerk/user.updated" },
@@ -52,5 +52,4 @@ export const syncUserUpdation = inngest.createFunction(
   }
 );
 
-// YEH LINE MISSING THI JISKI WAJAH SY ERROR AYYA:
 export const functions = [syncUserCreation, syncUserDeletion, syncUserUpdation];

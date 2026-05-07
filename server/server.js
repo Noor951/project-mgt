@@ -8,13 +8,20 @@ import { inngest, functions } from "./inngest/index.js";
 const app = express();
 app.use(cors());
 
-// Inngest route - Signing key sirf production mein verify hogi
+// ✅ Raw body parser ONLY for Inngest route (before express.json)
+app.use("/api/inngest", express.raw({ type: "application/json" }));
+
+// ✅ Inngest serve - with explicit serveHost for Vercel
 app.use("/api/inngest", serve({ 
   client: inngest, 
   functions,
-  signingKey: process.env.INNGEST_SIGNING_KEY 
+  signingKey: process.env.INNGEST_SIGNING_KEY,
+  serveHost: process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}` 
+    : `http://localhost:${process.env.PORT || 5000}`,
 }));
 
+// Global JSON parser (after Inngest route)
 app.use(express.json());
 app.use(clerkMiddleware());
 
