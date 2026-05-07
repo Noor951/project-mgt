@@ -1,15 +1,12 @@
 import { Inngest } from "inngest";
 import prisma from "../configs/prisma.js";
 
-// Inngest Client setup - ID must match your project ID in Inngest Cloud
 export const inngest = new Inngest({ id: "project-mngt" });
 
 // 1. Sync User Creation
 export const syncUserCreation = inngest.createFunction(
-  {
-    id: "sync-user-from-clerk",
-    triggers: [{ event: "clerk/user.created" }],
-  },
+  { id: "sync-user-from-clerk" }, 
+  { event: "clerk/user.created" }, 
   async ({ event }) => {
     const { data } = event;
     await prisma.user.create({
@@ -26,10 +23,8 @@ export const syncUserCreation = inngest.createFunction(
 
 // 2. Sync User Deletion
 export const syncUserDeletion = inngest.createFunction(
-  {
-    id: "delete-user-with-clerk",
-    triggers: [{ event: "clerk/user.deleted" }],
-  },
+  { id: "delete-user-with-clerk" },
+  { event: "clerk/user.deleted" },
   async ({ event }) => {
     const { data } = event;
     await prisma.user.delete({
@@ -41,10 +36,8 @@ export const syncUserDeletion = inngest.createFunction(
 
 // 3. Sync User Update
 export const syncUserUpdation = inngest.createFunction(
-  {
-    id: "update-user-from-clerk",
-    triggers: [{ event: "clerk/user.updated" }],
-  },
+  { id: "update-user-from-clerk" },
+  { event: "clerk/user.updated" },
   async ({ event }) => {
     const { data } = event;
     await prisma.user.update({
@@ -59,4 +52,5 @@ export const syncUserUpdation = inngest.createFunction(
   }
 );
 
+// YEH LINE MISSING THI JISKI WAJAH SY ERROR AYYA:
 export const functions = [syncUserCreation, syncUserDeletion, syncUserUpdation];
