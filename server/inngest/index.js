@@ -1,6 +1,7 @@
 import { Inngest } from "inngest";
 import prisma from "../configs/prisma.js";
 
+// Inngest Client setup - ID must match your project ID in Inngest Cloud
 export const inngest = new Inngest({ id: "project-mngt" });
 
 // 1. Sync User Creation

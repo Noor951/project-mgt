@@ -10,17 +10,24 @@ const app = express();
 // 1. CORS
 app.use(cors());
 
-// 2. Body parser — MUST come before Inngest route
+// 2. Inngest Route — Isay sab se upar rakhein taake koi middleware isay block na kare
+// Signing Key yahan pass karna lazmi hai
+app.use("/api/inngest", serve({ 
+  client: inngest, 
+  functions,
+  signingKey: process.env.INNGEST_SIGNING_KEY 
+}));
+
+// 3. Body parser — Inngest ke baad (ya pehle, lekin Inngest handle kar leta hai)
 app.use(express.json());
 
-// 3. Clerk middleware
+// 4. Clerk middleware
 app.use(clerkMiddleware());
 
-// 4. Routes
+// 5. Routes
 app.get('/', (req, res) => res.send('server is live!'));
-app.use("/api/inngest", serve({ client: inngest, functions }));
 
-// 5. Global error handler — prevents unhandled crashes from returning 500 silently
+// 6. Global error handler
 app.use((err, req, res, next) => {
   console.error('[Global Error]', err);
   res.status(500).json({ error: err.message || 'Internal Server Error' });
@@ -31,4 +38,4 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-export default app; // Vercel needs a default export for serverless
+export default app;
