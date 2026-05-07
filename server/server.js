@@ -15,10 +15,10 @@ app.use("/api/inngest", express.raw({ type: "application/json" }));
 app.use("/api/inngest", serve({ 
   client: inngest, 
   functions,
-  signingKey: process.env.INNGEST_SIGNING_KEY,
+  // Remove manual signingKey — let Inngest read INNGEST_SIGNING_KEY from env automatically
   serveHost: process.env.VERCEL_URL 
     ? `https://${process.env.VERCEL_URL}` 
-    : `http://localhost:${process.env.PORT || 5000}`,
+    : `http://localhost:5000`,
 }));
 
 // Global JSON parser (after Inngest route)
