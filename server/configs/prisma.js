@@ -5,16 +5,19 @@ import ws from "ws";
 
 neonConfig.webSocketConstructor = ws;
 
-// Yahan hum check kar rahe hain ke URL mil raha hai ya nahi
 const connectionString = process.env.DATABASE_URL;
 
-if (!connectionString) {
-  console.error("DANGER: DATABASE_URL is not defined in Environment Variables!");
+// AGAR URL NAHI HAI TOH CODE YAHI STOP HO JAYE
+if (!connectionString || connectionString === "undefined") {
+  throw new Error("FATAL: DATABASE_URL is not found in process.env. Check Vercel Dashboard.");
 }
 
-const pool = new Pool({ connectionString: connectionString });
+const pool = new Pool({ connectionString });
 const adapter = new PrismaNeon(pool);
 
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient({ 
+  adapter,
+  log: ['query', 'error', 'warn'] // Is se logs mein exact query nazar ayegi
+});
 
 export default prisma;
