@@ -8,15 +8,10 @@ import { inngest, functions } from "./inngest/index.js";
 const app = express();
 app.use(cors());
 
-app.use(
-  "/api/inngest",
-  serve({
-    client: inngest,
-    functions,
-    landingPage: true,  // ✅ enables GET to work
-  })
-);
+// ✅ THE ACTUAL FIX: json() middleware specifically for inngest route
+app.use("/api/inngest", express.json(), serve({ client: inngest, functions }));
 
+// Global middleware
 app.use(express.json());
 app.use(clerkMiddleware());
 
