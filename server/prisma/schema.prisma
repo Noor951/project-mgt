@@ -1,13 +1,14 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
   
 }
 
 datasource db {
-  provider = "postgresql"
-  // url aur directUrl yahan se hata dein
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma" // Yeh line add karein
 }
-
 enum WorkspaceRole {
   ADMIN
   MEMBER

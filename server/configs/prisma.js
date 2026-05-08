@@ -5,7 +5,14 @@ import ws from "ws";
 
 neonConfig.webSocketConstructor = ws;
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Yahan hum check kar rahe hain ke URL mil raha hai ya nahi
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error("DANGER: DATABASE_URL is not defined in Environment Variables!");
+}
+
+const pool = new Pool({ connectionString: connectionString });
 const adapter = new PrismaNeon(pool);
 
 const prisma = new PrismaClient({ adapter });
