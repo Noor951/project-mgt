@@ -5,10 +5,8 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-  "dev": "next dev",
-  "build": "prisma generate && next build",
-  "start": "next start",
-  "lint": "next lint"
+  "start": "node server.js",
+  "build": "prisma generate" 
 },
   "keywords": [],
   "author": "",
