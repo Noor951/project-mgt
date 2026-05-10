@@ -1,15 +1,13 @@
 generator client {
   provider = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
-  
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-  // Ye line add karein, ye build fail hone se bachati hai
-  directUrl = env("DATABASE_URL") 
+  // URL wali line yahan se delete kar dein
 }
+
 enum WorkspaceRole {
   ADMIN
   MEMBER

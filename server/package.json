@@ -5,11 +5,11 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "postinstall": "prisma generate",
-    "build": "prisma generate",
-    "start": "node server.js",
-    "server": "nodemon server.js"
-  },
+  "dev": "next dev",
+  "build": "prisma generate && next build",
+  "start": "next start",
+  "lint": "next lint"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
