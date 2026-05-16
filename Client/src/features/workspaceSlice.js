@@ -1,9 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { dummyWorkspaces } from "../assets/assets";
 
 const initialState = {
-    workspaces: dummyWorkspaces || [],
-    currentWorkspace: dummyWorkspaces[1],
+    workspaces: [],
+    currentWorkspace: null,
     loading: false,
 };
 
@@ -12,7 +11,17 @@ const workspaceSlice = createSlice({
     initialState,
     reducers: {
         setWorkspaces: (state, action) => {
-            state.workspaces = action.payload;
+            state.workspaces = action.payload || [];
+
+            const savedWorkspaceId = localStorage.getItem("currentWorkspaceId");
+            state.currentWorkspace =
+                state.workspaces.find((w) => w.id === savedWorkspaceId) ||
+                state.workspaces[0] ||
+                null;
+
+            if (state.currentWorkspace?.id) {
+                localStorage.setItem("currentWorkspaceId", state.currentWorkspace.id);
+            }
         },
         setCurrentWorkspace: (state, action) => {
             localStorage.setItem("currentWorkspaceId", action.payload);
@@ -37,9 +46,14 @@ const workspaceSlice = createSlice({
             }
         },
         deleteWorkspace: (state, action) => {
-            state.workspaces = state.workspaces.filter((w) => w._id !== action.payload);
+            state.workspaces = state.workspaces.filter((w) => w.id !== action.payload);
+            if (state.currentWorkspace?.id === action.payload) {
+                state.currentWorkspace = state.workspaces[0] || null;
+            }
         },
         addProject: (state, action) => {
+            if (!state.currentWorkspace) return;
+
             state.currentWorkspace.projects.push(action.payload);
             // find workspace by id and add project to it
             state.workspaces = state.workspaces.map((w) =>
@@ -47,6 +61,7 @@ const workspaceSlice = createSlice({
             );
         },
         addTask: (state, action) => {
+            if (!state.currentWorkspace) return;
 
             state.currentWorkspace.projects = state.currentWorkspace.projects.map((p) => {
                 console.log(p.id, action.payload.projectId, p.id === action.payload.projectId);
@@ -66,6 +81,8 @@ const workspaceSlice = createSlice({
             );
         },
         updateTask: (state, action) => {
+            if (!state.currentWorkspace) return;
+
             state.currentWorkspace.projects.map((p) => {
                 if (p.id === action.payload.projectId) {
                     p.tasks = p.tasks.map((t) =>
@@ -87,6 +104,8 @@ const workspaceSlice = createSlice({
             );
         },
         deleteTask: (state, action) => {
+            if (!state.currentWorkspace) return;
+
             state.currentWorkspace.projects.map((p) => {
                 p.tasks = p.tasks.filter((t) => !action.payload.includes(t.id));
                 return p;

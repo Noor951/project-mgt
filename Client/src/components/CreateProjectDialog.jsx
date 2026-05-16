@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { XIcon } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useUser } from "@clerk/clerk-react";
+import toast from "react-hot-toast";
+import { addProject } from "../features/workspaceSlice";
 
 const CreateProjectDialog = ({ isDialogOpen, setIsDialogOpen }) => {
 
     const { currentWorkspace } = useSelector((state) => state.workspace);
+    const { user } = useUser();
+    const dispatch = useDispatch();
 
     const [formData, setFormData] = useState({
         name: "",
@@ -22,7 +27,70 @@ const CreateProjectDialog = ({ isDialogOpen, setIsDialogOpen }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
+        if (!currentWorkspace) return;
+
+        const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+        const currentUserId = user?.id || currentWorkspace.ownerId;
+        const teamLeadId = formData.team_lead || currentUserId;
+
+        const teamMemberIds = Array.from(new Set([
+            ...(teamLeadId ? [teamLeadId] : []),
+            ...formData.team_members,
+        ]));
+
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch(`${apiBaseUrl}/api/projects`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    workspaceId: currentWorkspace.id,
+                    userId: currentUserId,
+                    name: formData.name,
+                    description: formData.description,
+                    status: formData.status,
+                    priority: formData.priority,
+                    start_date: formData.start_date || null,
+                    end_date: formData.end_date || null,
+                    team_lead: teamLeadId,
+                    team_members: teamMemberIds,
+                    progress: formData.progress,
+                }),
+            });
+
+            const payload = await response.json();
+
+            if (!response.ok) {
+                throw new Error(payload?.error || "Failed to create project");
+            }
+
+            if (payload?.project) {
+                dispatch(addProject(payload.project));
+            }
+
+            toast.success("Project created successfully");
+            setIsDialogOpen(false);
+            setFormData({
+                name: "",
+                description: "",
+                status: "PLANNING",
+                priority: "MEDIUM",
+                start_date: "",
+                end_date: "",
+                team_members: [],
+                team_lead: "",
+                progress: 0,
+            });
+        } catch (error) {
+            toast.error(error?.message || "Failed to create project");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const removeTeamMember = (email) => {
@@ -99,7 +167,7 @@ const CreateProjectDialog = ({ isDialogOpen, setIsDialogOpen }) => {
                         <select value={formData.team_lead} onChange={(e) => setFormData({ ...formData, team_lead: e.target.value, team_members: e.target.value ? [...new Set([...formData.team_members, e.target.value])] : formData.team_members, })} className="w-full px-3 py-2 rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 mt-1 text-zinc-900 dark:text-zinc-200 text-sm" >
                             <option value="">No lead</option>
                             {currentWorkspace?.members?.map((member) => (
-                                <option key={member.user.email} value={member.user.email}>
+                                <option key={member.user.id} value={member.user.id}>
                                     {member.user.email}
                                 </option>
                             ))}
@@ -118,9 +186,9 @@ const CreateProjectDialog = ({ isDialogOpen, setIsDialogOpen }) => {
                         >
                             <option value="">Add team members</option>
                             {currentWorkspace?.members
-                                ?.filter((email) => !formData.team_members.includes(email))
+                                ?.filter((member) => !formData.team_members.includes(member.user.id))
                                 .map((member) => (
-                                    <option key={member.user.email} value={member.email}>
+                                    <option key={member.user.id} value={member.user.id}>
                                         {member.user.email}
                                     </option>
                                 ))}
