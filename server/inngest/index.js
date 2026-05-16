@@ -1,5 +1,5 @@
 import { Inngest } from "inngest";
-import prisma from "../configs/prisma.js";
+import { deleteClerkUser, upsertClerkUser } from "../utils/clerkUserSync.js";
 
 // Inngest Client initialization
 export const inngest = new Inngest({ 
@@ -18,14 +18,7 @@ export const syncUserCreation = inngest.createFunction(
 
     // Step logic use karna behtar hai reliability ke liye
     const result = await step.run("create-user-in-db", async () => {
-      return await prisma.user.create({
-        data: {
-          id: data.id,
-          email: data?.email_addresses?.[0]?.email_address || "",
-          name: `${data?.first_name || ""} ${data?.last_name || ""}`.trim(),
-          image: data?.image_url || "",
-        },
-      });
+      return upsertClerkUser(data);
     });
 
     return { success: true, userId: result.id };
@@ -40,9 +33,7 @@ export const syncUserDeletion = inngest.createFunction(
     const { data } = event;
     
     await step.run("delete-user-from-db", async () => {
-      return await prisma.user.delete({ 
-        where: { id: data.id } 
-      });
+      return deleteClerkUser(data);
     });
 
     return { success: true, userId: data.id };
@@ -57,14 +48,7 @@ export const syncUserUpdation = inngest.createFunction(
     const { data } = event;
 
     const result = await step.run("update-user-in-db", async () => {
-      return await prisma.user.update({
-        where: { id: data.id },
-        data: {
-          email: data?.email_addresses?.[0]?.email_address || "",
-          name: `${data?.first_name || ""} ${data?.last_name || ""}`.trim(),
-          image: data?.image_url || "",
-        },
-      });
+      return upsertClerkUser(data);
     });
 
     return { success: true, userId: result.id };

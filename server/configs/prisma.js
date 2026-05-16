@@ -1,20 +1,32 @@
+import dotenv from "dotenv";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 import { PrismaClient } from "@prisma/client";
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import { PrismaNeon } from "@prisma/adapter-neon";
-import ws from "ws";
+import { Pool } from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-// WebSocket setup for Serverless
-if (typeof window === "undefined") {
-  neonConfig.webSocketConstructor = ws;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+dotenv.config({ path: resolve(__dirname, "../.env") });
+
+const connectionString = process.env.DATABASE_URL?.trim();
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL is not set");
 }
 
-const connectionString = "postgresql://neondb_owner:npg_LYZQBg7pPH6F@ep-weathered-feather-am1ddnwf.us-east-1.aws.neon.tech/neondb?sslmode=require";
+console.log('[prisma] using DATABASE_URL startsWith:', !!connectionString, connectionString?.slice(0, 40).replace(/:.+@/, ':***@'));
 
-const pool = new Pool({ connectionString });
-const adapter = new PrismaNeon(pool);
+const pool = new Pool({
+  connectionString,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
 
-// Prisma 7 Fix: Constructor ko bilkul empty rakhien ya sirf adapter dein
-// Connection string automatically pool/adapter ke zariye handle hogi
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient({
+  adapter: new PrismaPg(pool),
+});
 
 export default prisma;
